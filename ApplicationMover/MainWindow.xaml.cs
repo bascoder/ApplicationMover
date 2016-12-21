@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Linq;
@@ -12,7 +13,10 @@ namespace ApplicationMover
     public partial class MainWindow : Window
     {
         private UIElement[] _elementsPreProcess;
-        private TextBox[] _txtPathHolders;
+
+        private delegate void PathAction();
+
+        private readonly AppMoverInfo _appMoverInfo = new AppMoverInfo();
 
         public MainWindow()
         {
@@ -26,43 +30,47 @@ namespace ApplicationMover
             {
                 TxtSourceFolder, TxtDestinationFolder, BtnSelectSource, BtnSelectDestination
             };
-
-            _txtPathHolders = new TextBox[]
-            {
-                TxtSourceFolder, TxtDestinationFolder
-            };
         }
 
         private void BtnSelectSource_OnClick(object sender, RoutedEventArgs e)
         {
-            RetrieveDirectoryPath(TxtSourceFolder);
-            CheckCanProcess();
+            var path = PickDirectoryPath();
+            AssignSourceDirectory(path);
         }
 
         private void BtnSelectDestination_OnClick(object sender, RoutedEventArgs e)
         {
-            RetrieveDirectoryPath(TxtDestinationFolder);
-            CheckCanProcess();
+            var path = PickDirectoryPath();
+            AssignTargetDirectory(path);
         }
 
-        private void TxtSourceDestFolder_OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        private void TxtSourceFolder_OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
         {
             var textBox = (TextBox)sender;
             var text = textBox.Text;
 
             if (!string.IsNullOrWhiteSpace(text))
             {
-                AssignDirectoryPath(textBox, text);
+                AssignSourceDirectory(text);
             }
+        }
 
-            CheckCanProcess();
+        private void TxtDestinationFolder_OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var textBox = (TextBox)sender;
+            var text = textBox.Text;
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                AssignTargetDirectory(text);
+            }
         }
 
         private void BtnProcess_OnClick(object sender, RoutedEventArgs e)
         {
-            if (CheckCanProcess())
+            if (TryEnableProcess())
             {
-                DisablePreProcessElements();
+                ChangePreProcessElements(enable: false);
                 StartProcessing();
             }
         }
@@ -70,50 +78,52 @@ namespace ApplicationMover
         private void StartProcessing()
         {
 
+            IAppMover appMover = new GenericAppMover();
+            appMover.MoveApplication(_appMoverInfo);
+
+            ChangePreProcessElements(enable: true);
+            PbMain.Value = 100;
         }
 
-        private void DisablePreProcessElements()
+        private void AssignSourceDirectory(string path)
         {
-            _elementsPreProcess.ToList().ForEach(x => x.IsEnabled = false);
+            AssignDirectory(() => _appMoverInfo.SourceDirectory = path,
+                () => TxtSourceFolder.Text = path);
         }
 
-        private bool CheckCanProcess()
+        private void AssignTargetDirectory(string path)
         {
-            bool allValid = _txtPathHolders.All(x => IsValidDirectory(x.Text));
+            AssignDirectory(() => _appMoverInfo.TargetDirectory = path,
+                () => TxtDestinationFolder.Text = path);
+        }
 
-            // enable button if all input fields are valid
-            return BtnProcess.IsEnabled = allValid;
+        private void AssignDirectory(PathAction actionAssignInfo, PathAction actionAssignTextBox)
+        {
+            try
+            {
+                actionAssignInfo();
+                actionAssignTextBox();
+                TryEnableProcess();
+            }
+            catch (UserException e)
+            {
+                ShowErrorMessage(e.Message, "Directory error");
+            }
+        }
+
+        private void ChangePreProcessElements(bool enable)
+        {
+            _elementsPreProcess.ToList().ForEach(x => x.IsEnabled = enable);
+        }
+
+        private bool TryEnableProcess()
+        {
+            return BtnProcess.IsEnabled = _appMoverInfo.IsValid();
         }
 
         private void ShowErrorMessage(string message, string caption = "")
         {
             MessageBox.Show(this, message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private void RetrieveDirectoryPath(TextBox target)
-        {
-            var path = PickDirectoryPath();
-            if (path != null)
-            {
-                AssignDirectoryPath(target, path);
-            }
-        }
-
-        private void AssignDirectoryPath(TextBox target, string path)
-        {
-            if (IsValidDirectory(path))
-            {
-                target.Text = path;
-            }
-            else
-            {
-                ShowErrorMessage("Please provide an existing directory", "Invalid directory");
-            }
-        }
-
-        private static bool IsValidDirectory(string path)
-        {
-            return Directory.Exists(path);
         }
 
         private static string PickDirectoryPath()

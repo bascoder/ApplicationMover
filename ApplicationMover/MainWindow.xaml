@@ -20,7 +20,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <TextBox Name="TxtSourceFolder"
-                 LostFocus="TxtSourceDestFolder_OnLostFocus"
+                 LostFocus="TxtSourceFolder_OnLostFocus"
                  Grid.Column="0"
                  Grid.Row="0"
                  VerticalAlignment="Center"
@@ -37,7 +37,7 @@
             Source
         </Button>
         <TextBox Name="TxtDestinationFolder"
-                 LostFocus="TxtSourceDestFolder_OnLostFocus"
+                 LostFocus="TxtDestinationFolder_OnLostFocus"
                  Grid.Column="0"
                  Grid.Row="1"
                  VerticalAlignment="Center"

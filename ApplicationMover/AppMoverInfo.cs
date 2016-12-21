@@ -18,17 +18,7 @@ namespace ApplicationMover
         public string SourceDirectory
         {
             get { return _sourceDirectory; }
-            set
-            {
-                if (DoesDirectoryExists(value))
-                {
-                    _sourceDirectory = value;
-                }
-                else
-                {
-                    throw new UserException("Expect directory to exist");
-                }
-            }
+            set { SetSourceDirectory(value); }
         }
 
         /// <summary>
@@ -37,23 +27,41 @@ namespace ApplicationMover
         public string TargetDirectory
         {
             get { return _targetDirectory; }
-            set
+            set { SetTargetDirectory(value); }
+        }
+
+        private void SetSourceDirectory(string value)
+        {
+            if (value?.Equals(TargetDirectory) == true)
             {
-                SetTargetDirectory(value);
+                throw new UserException("Expect source directory to be different from destination directory");
             }
+            if (!DoesDirectoryExists(value))
+            {
+                throw new UserException("Expect directory to exist");
+            }
+            _sourceDirectory = value;
         }
 
         private void SetTargetDirectory(string value)
         {
-            if (IsTargetDirectoryValid(value))
+            try
             {
                 CreateDirectoryIfNotExists(value);
-                _targetDirectory = value;
             }
-            else
+            catch (Exception e)
             {
-                throw new UserException("Expect target directory to be empty");
+                throw new UserException("Could not create destination directory at " + value, e);
             }
+            if (value?.Equals(SourceDirectory) == true)
+            {
+                throw new UserException("Expect destination directory to be different than source directory");
+            }
+            if (!IsTargetDirectoryValid(value))
+            {
+                throw new UserException("Expect destination directory to be empty");
+            }
+            _targetDirectory = value;
         }
 
         public bool IsValid()
@@ -61,6 +69,13 @@ namespace ApplicationMover
             return DoesDirectoryExists(_sourceDirectory)
                 && DoesDirectoryExists(_targetDirectory)
                 && IsTargetDirectoryValid(_targetDirectory);
+        }
+
+        private static bool IsTargetDirectoryValid(string directory)
+        {
+            return !string.IsNullOrWhiteSpace(directory)
+                   && Directory.GetDirectories(directory).Length == 0
+                   && Directory.GetFiles(directory).Length == 0;
         }
 
         private static void CreateDirectoryIfNotExists(string value)
@@ -74,13 +89,6 @@ namespace ApplicationMover
         private static bool DoesDirectoryExists(string directory)
         {
             return Directory.Exists(directory);
-        }
-
-        private static bool IsTargetDirectoryValid(string directory)
-        {
-            return !string.IsNullOrWhiteSpace(directory)
-                && Directory.GetDirectories(directory).Length == 0
-                && Directory.GetFiles(directory).Length == 0;
         }
     }
 }
