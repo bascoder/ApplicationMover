@@ -78,7 +78,7 @@ namespace ApplicationMover
         private void StartProcessing()
         {
 
-            IAppMover appMover = new GenericAppMover();
+            IAppMover appMover = new MkLinkAppMover();
             appMover.MoveApplication(_appMoverInfo);
 
             ChangePreProcessElements(enable: true);
