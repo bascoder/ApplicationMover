@@ -20,12 +20,14 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <TextBox Name="TxtSourceFolder"
+                 LostFocus="TxtSourceDestFolder_OnLostFocus"
                  Grid.Column="0"
                  Grid.Row="0"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Center"
                  Width="200" />
         <Button Name="BtnSelectSource"
+                Click="BtnSelectSource_OnClick"
                 Grid.Column="1"
                 Grid.Row="0"
                 VerticalAlignment="Center"
@@ -35,12 +37,14 @@
             Source
         </Button>
         <TextBox Name="TxtDestinationFolder"
+                 LostFocus="TxtSourceDestFolder_OnLostFocus"
                  Grid.Column="0"
                  Grid.Row="1"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Center"
                  Width="200" />
         <Button Name="BtnSelectDestination"
+                Click="BtnSelectDestination_OnClick"
                 Grid.Column="1"
                 Grid.Row="1"
                 VerticalAlignment="Center"
@@ -59,6 +63,8 @@
                      Maximum="100"
                      Margin="30, 0" />
         <Button Name="BtnProcess"
+                IsEnabled="False"
+                Click="BtnProcess_OnClick"
                 Grid.ColumnSpan="2"
                 Grid.Column="0"
                 Grid.Row="3"
