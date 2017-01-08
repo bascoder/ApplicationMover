@@ -72,21 +72,21 @@ namespace ApplicationMover
             if (TryEnableProcess())
             {
                 ChangePreProcessElements(enable: false);
-                await StartProcessingAsync();
+                await DoProcessingAsync();
                 ChangePreProcessElements(enable: true);
                 PbMain.Value = 100;
             }
         }
 
-        private void StartProcessing()
+        private void DoProcessing()
         {
             IAppMover appMover = new MkLinkAppMover();
             appMover.MoveApplication(_appMoverInfo);
         }
 
-        private Task StartProcessingAsync()
+        private Task DoProcessingAsync()
         {
-            return Task.Run(new Action(StartProcessing));
+            return Task.Run(new Action(DoProcessing));
         }
 
         private void AssignSourceDirectory(string path)
