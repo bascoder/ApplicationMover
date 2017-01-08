@@ -67,15 +67,20 @@ namespace ApplicationMover
             }
         }
 
-        private async void BtnProcess_OnClick(object sender, RoutedEventArgs e)
+        private void BtnProcess_OnClick(object sender, RoutedEventArgs e)
         {
             if (TryEnableProcess())
             {
-                ChangePreProcessElements(enable: false);
-                await DoProcessingAsync();
-                ChangePreProcessElements(enable: true);
-                PbMain.Value = 100;
+                StartProcessing();
             }
+        }
+
+        private async void StartProcessing()
+        {
+            ChangePreProcessElements(enable: false);
+            await DoProcessingAsync();
+            ChangePreProcessElements(enable: true);
+            PbMain.Value = 100;
         }
 
         private void DoProcessing()
