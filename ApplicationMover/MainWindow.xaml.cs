@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Linq;
+using System.Threading.Tasks;
 using Forms = System.Windows.Forms;
 
 namespace ApplicationMover
@@ -66,23 +67,26 @@ namespace ApplicationMover
             }
         }
 
-        private void BtnProcess_OnClick(object sender, RoutedEventArgs e)
+        private async void BtnProcess_OnClick(object sender, RoutedEventArgs e)
         {
             if (TryEnableProcess())
             {
                 ChangePreProcessElements(enable: false);
-                StartProcessing();
+                await StartProcessingAsync();
+                ChangePreProcessElements(enable: true);
+                PbMain.Value = 100;
             }
         }
 
         private void StartProcessing()
         {
-
             IAppMover appMover = new MkLinkAppMover();
             appMover.MoveApplication(_appMoverInfo);
+        }
 
-            ChangePreProcessElements(enable: true);
-            PbMain.Value = 100;
+        private Task StartProcessingAsync()
+        {
+            return Task.Run(new Action(StartProcessing));
         }
 
         private void AssignSourceDirectory(string path)
